@@ -1,7 +1,7 @@
 from typing import Literal
-
+from sqlalchemy import select
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from google import genai
 from pydantic import BaseModel, Field
 
@@ -10,7 +10,7 @@ import json
 
 from database import check_database_connection, get_db
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 
 from models import (
@@ -95,6 +95,62 @@ def database_health():
         "test_query_result": result
     }
 
+
+@app.get(
+    "/requirements/{requirement_id}/test-cases",
+    response_model=TestCaseResponse
+)
+def get_saved_test_suite(
+    requirement_id: int,
+    db: Session = Depends(get_db)
+):
+    statement = (
+        select(RequirementRecord)
+        .options(
+            selectinload(RequirementRecord.test_cases)
+            .selectinload(TestCaseRecord.steps)
+        )
+        .where(RequirementRecord.id == requirement_id)
+    )
+
+    requirement_record = db.scalar(statement)
+
+    if requirement_record is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Saved requirement was not found"
+        )
+
+    saved_test_cases = []
+
+    for test_case_record in requirement_record.test_cases:
+        saved_steps = []
+
+        for step_record in test_case_record.steps:
+            saved_steps.append(
+                TestStep(
+                    step_number=step_record.step_number,
+                    action=step_record.action,
+                    expected_result=step_record.expected_result
+                )
+            )
+
+        saved_test_cases.append(
+            TestCase(
+                test_case_id=test_case_record.test_case_code,
+                title=test_case_record.title,
+                scenario_type=test_case_record.scenario_type,
+                priority=test_case_record.priority,
+                preconditions=test_case_record.preconditions,
+                test_data=test_case_record.test_data,
+                steps=saved_steps
+            )
+        )
+
+    return TestCaseResponse(
+        requirement=requirement_record.requirement_text,
+        test_cases=saved_test_cases
+    )
 
 @app.post(
     "/requirements/quality-check",

@@ -48,7 +48,8 @@ class RequirementRecord(Base):
     test_cases: Mapped[list["TestCaseRecord"]] = relationship(
         back_populates="requirement",
         cascade="all, delete-orphan",
-        passive_deletes=True
+        passive_deletes=True,
+        order_by="TestCaseRecord.id"
     )
 
 
