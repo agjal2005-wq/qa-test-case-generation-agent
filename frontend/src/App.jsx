@@ -11,6 +11,8 @@ function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState("");
 
+  const [testSuite, setTestSuite] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   async function handleAnalyze() {
     setIsAnalyzing(true);
@@ -50,6 +52,43 @@ function App() {
     }
   }
 
+  async function handleGenerate() {
+    setIsGenerating(true);
+    setError("");
+    setTestSuite(null);
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/requirements/analyze`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            requirement: requirement
+          })
+        }
+      );
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        const message =
+          typeof responseData.detail === "string"
+            ? responseData.detail
+            : "The test cases could not be generated.";
+
+        throw new Error(message);
+      }
+
+      setTestSuite(responseData);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  }
 
   return (
     <div className="app">
@@ -104,8 +143,13 @@ function App() {
               {isAnalyzing ? "Analysing..." : "Analyse quality"}
             </button>
 
-            <button className="primary-button" type="button">
-              Generate test cases
+            <button
+              className="primary-button"
+              type="button"
+              onClick={handleGenerate}
+              disabled={isGenerating || requirement.trim().length < 10}
+            >
+              {isGenerating ? "Generating..." : "Generate test cases"}
             </button>
           </div>
         </section>
@@ -173,7 +217,7 @@ function App() {
             </div>
           </section>
         ) : (
-          !error && (
+          !error && !testSuite && (
             <section className="result-placeholder">
               <div className="placeholder-icon">✓</div>
               <h3>Your analysis will appear here</h3>
@@ -182,6 +226,96 @@ function App() {
               </p>
             </section>
           )
+        )}
+
+        {testSuite && (
+          <section className="test-suite">
+            <div className="suite-heading">
+              <div>
+                <p className="section-label">Generated test suite</p>
+                <h3>{testSuite.test_cases.length} test cases generated</h3>
+              </div>
+
+              <span className="saved-badge">
+                Saved to PostgreSQL
+              </span>
+            </div>
+
+            <div className="test-case-list">
+              {testSuite.test_cases.map((testCase) => (
+                <article
+                  className="test-case-card"
+                  key={testCase.test_case_id}
+                >
+                  <div className="test-case-header">
+                    <div>
+                      <span className="case-id">
+                        {testCase.test_case_id}
+                      </span>
+
+                      <h4>{testCase.title}</h4>
+                    </div>
+
+                    <div className="case-badges">
+                      <span className="scenario-badge">
+                        {testCase.scenario_type}
+                      </span>
+
+                      <span className="priority-badge">
+                        {testCase.priority} priority
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="case-details">
+                    <div>
+                      <h5>Preconditions</h5>
+                      <ul>
+                        {testCase.preconditions.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h5>Test data</h5>
+                      <ul>
+                        {testCase.test_data.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="steps-section">
+                    <h5>Test steps</h5>
+
+                    <div className="steps-table-wrapper">
+                      <table className="steps-table">
+                        <thead>
+                          <tr>
+                            <th>Step</th>
+                            <th>Action</th>
+                            <th>Expected result</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {testCase.steps.map((step) => (
+                            <tr key={step.step_number}>
+                              <td>{step.step_number}</td>
+                              <td>{step.action}</td>
+                              <td>{step.expected_result}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
         )}
       </main>
     </div>
