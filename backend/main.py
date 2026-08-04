@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 import json
 
+from fastapi.middleware.cors import CORSMiddleware
 
 from database import check_database_connection, get_db
 
@@ -28,6 +29,20 @@ app = FastAPI(
     title="QA Test Case Generation Agent",
     description="An AI agent that generates structured QA test cases from requirements.",
     version="1.0.0"
+)
+
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+]
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
 )
 
 
