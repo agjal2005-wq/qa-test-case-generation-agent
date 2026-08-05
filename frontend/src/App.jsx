@@ -32,6 +32,9 @@ function App() {
   const [coverageReview, setCoverageReview] = useState(null);
   const [isReviewing, setIsReviewing] = useState(false);
 
+  const [isAutoImproving, setIsAutoImproving] = useState(false);
+  const [agentMessage, setAgentMessage] = useState("");
+
   async function handleAnalyze() {
     setIsAnalyzing(true);
     setError("");
@@ -75,6 +78,7 @@ function App() {
     setError("");
     setTestSuite(null);
     setCoverageReview(null);
+    setAgentMessage("");
     try {
       const response = await fetch(
         `${API_BASE_URL}/requirements/analyze`,
@@ -112,6 +116,7 @@ function App() {
     setIsRefining(true);
     setError("");
     setCoverageReview(null);
+    setAgentMessage("");
 
     try {
       const response = await fetch(
@@ -154,6 +159,7 @@ function App() {
     setIsReviewing(true);
     setError("");
     setCoverageReview(null);
+    setAgentMessage("");
 
     try {
       const response = await fetch(
@@ -186,6 +192,110 @@ function App() {
       setError(requestError.message);
     } finally {
       setIsReviewing(false);
+    }
+  }
+
+  async function handleAutoImprove() {
+    if (!testSuite || !coverageReview) {
+      return;
+    }
+
+    const previousScore = coverageReview.coverage_score;
+
+    if (
+      coverageReview.coverage_score >= 90 &&
+      coverageReview.verdict === "Strong"
+    ) {
+      setAgentMessage(
+        "The critic considers this suite strong. No automatic refinement was required."
+      );
+      return;
+    }
+
+    setIsAutoImproving(true);
+    setError("");
+    setAgentMessage("");
+
+    const refinementPrompt = `
+Improve the current test suite using the QA critic's findings.
+
+Missing scenarios:
+${coverageReview.missing_scenarios.join("\n")}
+
+Duplicate or overlapping cases:
+${coverageReview.duplicate_or_overlapping_cases.join("\n")}
+
+Unsupported assumptions:
+${coverageReview.unsupported_assumptions.join("\n")}
+
+Recommendations:
+${coverageReview.recommendations.join("\n")}
+
+Preserve useful existing cases. Add missing coverage, remove or merge
+substantial duplicates, and replace unsupported assumptions with clearly
+labelled conditions or clarification-dependent tests. Keep IDs sequential.
+  `.trim();
+
+    try {
+      const refinementResponse = await fetch(
+        `${API_BASE_URL}/test-cases/refine`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            requirement: requirement,
+            refinement_instruction: refinementPrompt,
+            current_test_cases: testSuite.test_cases
+          })
+        }
+      );
+
+      const refinedSuite = await refinementResponse.json();
+
+      if (!refinementResponse.ok) {
+        throw new Error(
+          typeof refinedSuite.detail === "string"
+            ? refinedSuite.detail
+            : "Automatic refinement failed."
+        );
+      }
+
+      const reviewResponse = await fetch(
+        `${API_BASE_URL}/test-cases/review`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            requirement: requirement,
+            test_cases: refinedSuite.test_cases
+          })
+        }
+      );
+
+      const newReview = await reviewResponse.json();
+
+      if (!reviewResponse.ok) {
+        throw new Error(
+          typeof newReview.detail === "string"
+            ? newReview.detail
+            : "The improved suite could not be reviewed."
+        );
+      }
+
+      setTestSuite(refinedSuite);
+      setCoverageReview(newReview);
+
+      setAgentMessage(
+        `Agentic improvement completed. Coverage changed from ${previousScore} to ${newReview.coverage_score}.`
+      );
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsAutoImproving(false);
     }
   }
 
@@ -484,6 +594,33 @@ function App() {
                 ))}
               </ol>
             </div>
+
+            <div className="agent-action">
+              <div>
+                <p className="section-label">Controlled agentic workflow</p>
+                <p>
+                  The critic findings will guide one automatic refinement and
+                  re-evaluation cycle.
+                </p>
+              </div>
+
+              <button
+                className="agent-button"
+                type="button"
+                onClick={handleAutoImprove}
+                disabled={isAutoImproving}
+              >
+                {isAutoImproving
+                  ? "Agent improving suite..."
+                  : "Auto-improve with critic"}
+              </button>
+            </div>
+
+            {agentMessage && (
+              <div className="agent-message">
+                {agentMessage}
+              </div>
+            )}
           </section>
         )}
 
