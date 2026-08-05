@@ -578,3 +578,102 @@ button:disabled {
     flex-direction: column;
   }
 }
+
+
+.review-button {
+  color: #ddd6fe;
+  border: 1px solid #6d28d9;
+  background: #3b1764;
+}
+
+.coverage-card {
+  margin-top: 25px;
+  padding: 27px;
+  border: 1px solid #5b21b6;
+  border-radius: 15px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(46, 16, 101, 0.35),
+      rgba(13, 13, 15, 0.97)
+    );
+}
+
+.coverage-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.coverage-heading h3 {
+  margin: 7px 0 0;
+  color: #f8fafc;
+  font-size: 23px;
+}
+
+.coverage-score {
+  min-width: 110px;
+  padding: 13px;
+  text-align: center;
+  border: 1px solid #6d28d9;
+  border-radius: 12px;
+  background: #2e1065;
+}
+
+.coverage-score strong {
+  display: block;
+  color: #ddd6fe;
+  font-size: 29px;
+}
+
+.coverage-score span {
+  color: #c4b5fd;
+  font-size: 12px;
+}
+
+.coverage-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.coverage-grid > div,
+.recommendation-section {
+  padding: 19px;
+  border: 1px solid #27272a;
+  border-radius: 11px;
+  background: #08080a;
+}
+
+.coverage-card h4 {
+  margin: 0 0 11px;
+  color: #e9d5ff;
+}
+
+.coverage-card ul,
+.coverage-card ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #b8c3d3;
+  line-height: 1.65;
+}
+
+.coverage-card li + li {
+  margin-top: 7px;
+}
+
+.recommendation-section {
+  margin-top: 18px;
+}
+
+@media (max-width: 700px) {
+  .coverage-heading {
+    flex-direction: column;
+  }
+
+  .coverage-grid {
+    grid-template-columns: 1fr;
+  }
+}

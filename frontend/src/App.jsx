@@ -29,6 +29,9 @@ function App() {
   const [refinementInstruction, setRefinementInstruction] = useState("");
   const [isRefining, setIsRefining] = useState(false);
 
+  const [coverageReview, setCoverageReview] = useState(null);
+  const [isReviewing, setIsReviewing] = useState(false);
+
   async function handleAnalyze() {
     setIsAnalyzing(true);
     setError("");
@@ -71,7 +74,7 @@ function App() {
     setIsGenerating(true);
     setError("");
     setTestSuite(null);
-
+    setCoverageReview(null);
     try {
       const response = await fetch(
         `${API_BASE_URL}/requirements/analyze`,
@@ -108,6 +111,7 @@ function App() {
   async function handleRefine() {
     setIsRefining(true);
     setError("");
+    setCoverageReview(null);
 
     try {
       const response = await fetch(
@@ -145,6 +149,45 @@ function App() {
     }
   }
 
+
+  async function handleReviewCoverage() {
+    setIsReviewing(true);
+    setError("");
+    setCoverageReview(null);
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/test-cases/review`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            requirement: requirement,
+            test_cases: testSuite.test_cases
+          })
+        }
+      );
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        const message =
+          typeof responseData.detail === "string"
+            ? responseData.detail
+            : "The test suite could not be reviewed.";
+
+        throw new Error(message);
+      }
+
+      setCoverageReview(responseData);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsReviewing(false);
+    }
+  }
 
   function handleExportCsv() {
     if (!testSuite) {
@@ -377,6 +420,73 @@ function App() {
           </section>
         )}
 
+        {coverageReview && (
+          <section className="coverage-card">
+            <div className="coverage-heading">
+              <div>
+                <p className="section-label">QA critic review</p>
+                <h3>Test-suite coverage evaluation</h3>
+              </div>
+
+              <div className="coverage-score">
+                <strong>{coverageReview.coverage_score}</strong>
+                <span>{coverageReview.verdict}</span>
+              </div>
+            </div>
+
+            <div className="coverage-grid">
+              <div>
+                <h4>Covered areas</h4>
+                <ul>
+                  {coverageReview.covered_areas.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h4>Missing scenarios</h4>
+                <ul>
+                  {coverageReview.missing_scenarios.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h4>Duplicates or overlaps</h4>
+                <ul>
+                  {coverageReview.duplicate_or_overlapping_cases.length > 0
+                    ? coverageReview.duplicate_or_overlapping_cases.map(
+                      (item, index) => <li key={index}>{item}</li>
+                    )
+                    : <li>No substantial duplication detected.</li>}
+                </ul>
+              </div>
+
+              <div>
+                <h4>Unsupported assumptions</h4>
+                <ul>
+                  {coverageReview.unsupported_assumptions.length > 0
+                    ? coverageReview.unsupported_assumptions.map(
+                      (item, index) => <li key={index}>{item}</li>
+                    )
+                    : <li>No unsupported assumptions detected.</li>}
+                </ul>
+              </div>
+            </div>
+
+            <div className="recommendation-section">
+              <h4>Critic recommendations</h4>
+              <ol>
+                {coverageReview.recommendations.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ol>
+            </div>
+          </section>
+        )}
+
         {testSuite && (
           <section className="test-suite">
             <div className="suite-heading">
@@ -389,6 +499,15 @@ function App() {
                 <span className="saved-badge">
                   Saved to PostgreSQL
                 </span>
+
+                <button
+                  className="review-button"
+                  type="button"
+                  onClick={handleReviewCoverage}
+                  disabled={isReviewing}
+                >
+                  {isReviewing ? "Reviewing..." : "Review coverage"}
+                </button>
 
                 <button
                   className="export-button"
