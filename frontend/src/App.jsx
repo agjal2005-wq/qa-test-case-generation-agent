@@ -4,6 +4,18 @@ import "./App.css";
 
 const API_BASE_URL = "http://127.0.0.1:8000";
 
+function escapeCsvValue(value) {
+  let text = Array.isArray(value)
+    ? value.join(" | ")
+    : String(value ?? "");
+
+  if (/^[=+\-@]/.test(text.trimStart())) {
+    text = `'${text}`;
+  }
+
+  return `"${text.replaceAll('"', '""')}"`;
+}
+
 
 function App() {
   const [requirement, setRequirement] = useState("");
@@ -131,6 +143,65 @@ function App() {
     } finally {
       setIsRefining(false);
     }
+  }
+
+
+  function handleExportCsv() {
+    if (!testSuite) {
+      return;
+    }
+
+    const headers = [
+      "Test Case ID",
+      "Title",
+      "Scenario Type",
+      "Priority",
+      "Preconditions",
+      "Test Data",
+      "Step Number",
+      "Action",
+      "Expected Result"
+    ];
+
+    const rows = testSuite.test_cases.flatMap((testCase) =>
+      testCase.steps.map((step) => [
+        testCase.test_case_id,
+        testCase.title,
+        testCase.scenario_type,
+        testCase.priority,
+        testCase.preconditions,
+        testCase.test_data,
+        step.step_number,
+        step.action,
+        step.expected_result
+      ])
+    );
+
+    const csvContent = [
+      headers.map(escapeCsvValue).join(","),
+      ...rows.map((row) =>
+        row.map(escapeCsvValue).join(",")
+      )
+    ].join("\n");
+
+    const csvFile = new Blob(
+      ["\uFEFF", csvContent],
+      {
+        type: "text/csv;charset=utf-8"
+      }
+    );
+
+    const downloadUrl = URL.createObjectURL(csvFile);
+    const downloadLink = document.createElement("a");
+
+    downloadLink.href = downloadUrl;
+    downloadLink.download = "qa-test-suite.csv";
+
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+
+    URL.revokeObjectURL(downloadUrl);
   }
 
   return (
@@ -314,9 +385,19 @@ function App() {
                 <h3>{testSuite.test_cases.length} test cases generated</h3>
               </div>
 
-              <span className="saved-badge">
-                Saved to PostgreSQL
-              </span>
+              <div className="suite-actions">
+                <span className="saved-badge">
+                  Saved to PostgreSQL
+                </span>
+
+                <button
+                  className="export-button"
+                  type="button"
+                  onClick={handleExportCsv}
+                >
+                  Export CSV
+                </button>
+              </div>
             </div>
 
             <div className="test-case-list">
