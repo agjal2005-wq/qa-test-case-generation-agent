@@ -14,6 +14,9 @@ function App() {
   const [testSuite, setTestSuite] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  const [refinementInstruction, setRefinementInstruction] = useState("");
+  const [isRefining, setIsRefining] = useState(false);
+
   async function handleAnalyze() {
     setIsAnalyzing(true);
     setError("");
@@ -87,6 +90,46 @@ function App() {
       setError(requestError.message);
     } finally {
       setIsGenerating(false);
+    }
+  }
+
+  async function handleRefine() {
+    setIsRefining(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/test-cases/refine`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            requirement: requirement,
+            refinement_instruction: refinementInstruction,
+            current_test_cases: testSuite.test_cases
+          })
+        }
+      );
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        const message =
+          typeof responseData.detail === "string"
+            ? responseData.detail
+            : "The test suite could not be refined.";
+
+        throw new Error(message);
+      }
+
+      setTestSuite(responseData);
+      setRefinementInstruction("");
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsRefining(false);
     }
   }
 
@@ -226,6 +269,41 @@ function App() {
               </p>
             </section>
           )
+        )}
+
+        {testSuite && (
+          <section className="refinement-card">
+            <div>
+              <p className="section-label">Iterative refinement</p>
+              <h3>Improve the current test suite</h3>
+              <p>
+                Tell the QA agent what should be added, removed or changed.
+              </p>
+            </div>
+
+            <textarea
+              value={refinementInstruction}
+              onChange={(event) =>
+                setRefinementInstruction(event.target.value)
+              }
+              placeholder="Example: Add security test cases for prompt injection, malicious URLs and repeated requests."
+              rows="4"
+            />
+
+            <div className="refinement-action">
+              <button
+                className="primary-button"
+                type="button"
+                onClick={handleRefine}
+                disabled={
+                  isRefining ||
+                  refinementInstruction.trim().length < 3
+                }
+              >
+                {isRefining ? "Refining suite..." : "Refine test suite"}
+              </button>
+            </div>
+          </section>
         )}
 
         {testSuite && (

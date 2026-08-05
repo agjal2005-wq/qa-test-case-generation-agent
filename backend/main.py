@@ -93,6 +93,42 @@ class RefinementInput(BaseModel):
     current_test_cases: list[TestCase] = Field(min_length=1)
 
 
+def save_test_suite(
+    db: Session,
+    result: TestCaseResponse
+):
+    requirement_record = RequirementRecord(
+        requirement_text=result.requirement
+    )
+
+    for generated_case in result.test_cases:
+        test_case_record = TestCaseRecord(
+            test_case_code=generated_case.test_case_id,
+            title=generated_case.title,
+            scenario_type=generated_case.scenario_type,
+            priority=generated_case.priority,
+            preconditions=generated_case.preconditions,
+            test_data=generated_case.test_data
+        )
+
+        for generated_step in generated_case.steps:
+            step_record = TestStepRecord(
+                step_number=generated_step.step_number,
+                action=generated_step.action,
+                expected_result=generated_step.expected_result
+            )
+
+            test_case_record.steps.append(step_record)
+
+        requirement_record.test_cases.append(test_case_record)
+
+    db.add(requirement_record)
+    db.commit()
+    db.refresh(requirement_record)
+
+    return requirement_record.id
+
+
 
 @app.get("/")
 def home():
@@ -271,34 +307,7 @@ Rules:
     # Preserve exactly what the user submitted.
     result.requirement = data.requirement
 
-    requirement_record = RequirementRecord(
-        requirement_text=data.requirement
-    )
-
-    for generated_case in result.test_cases:
-        test_case_record = TestCaseRecord(
-            test_case_code=generated_case.test_case_id,
-            title=generated_case.title,
-            scenario_type=generated_case.scenario_type,
-            priority=generated_case.priority,
-            preconditions=generated_case.preconditions,
-            test_data=generated_case.test_data
-        )
-
-        for generated_step in generated_case.steps:
-            step_record = TestStepRecord(
-                step_number=generated_step.step_number,
-                action=generated_step.action,
-                expected_result=generated_step.expected_result
-            )
-
-            test_case_record.steps.append(step_record)
-
-        requirement_record.test_cases.append(test_case_record)
-
-    db.add(requirement_record)
-    db.commit()
-
+    save_test_suite(db, result)
 
     return result
 
@@ -307,7 +316,7 @@ Rules:
     "/test-cases/refine",
     response_model=TestCaseResponse
 )
-def refine_test_cases(data: RefinementInput):
+def refine_test_cases(data: RefinementInput, db: Session = Depends(get_db)):
     current_cases_json = json.dumps(
         [
             test_case.model_dump()
@@ -360,5 +369,7 @@ Rules:
     )
 
     result.requirement = data.requirement
+
+    save_test_suite(db, result)
 
     return result
