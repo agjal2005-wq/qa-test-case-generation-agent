@@ -153,3 +153,32 @@ class TestStepRecord(Base):
     test_case: Mapped["TestCaseRecord"] = relationship(
         back_populates="steps"
     )
+
+class KnowledgeChunkRecord(Base):
+    __tablename__ = "knowledge_chunks"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    source_title: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False
+    )
+
+    source_reference: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True
+    )
+
+    chunk_text: Mapped[str] = mapped_column(
+        Text,
+        nullable=False
+    )
+
+    embedding: Mapped[list] = mapped_column(
+        JSONB,
+        nullable=False
+    )
