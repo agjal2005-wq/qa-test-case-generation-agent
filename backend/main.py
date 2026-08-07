@@ -536,6 +536,25 @@ def add_knowledge(
     data: KnowledgeInput,
     db: Session = Depends(get_db)
 ):
+
+
+    existing_statement = (
+        select(KnowledgeChunkRecord)
+        .where(
+            KnowledgeChunkRecord.source_title == data.source_title,
+            KnowledgeChunkRecord.chunk_text == data.content
+        )
+    )
+
+    existing_record = db.scalar(existing_statement)
+
+    if existing_record is not None:
+        return {
+            "message": "Knowledge already exists",
+            "knowledge_id": existing_record.id,
+            "source_title": existing_record.source_title,
+            "embedding_dimensions": len(existing_record.embedding)
+        }
     embedding = create_document_embedding(data.content)
 
     knowledge_record = KnowledgeChunkRecord(

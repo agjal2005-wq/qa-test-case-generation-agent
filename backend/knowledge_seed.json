@@ -1,0 +1,22 @@
+[
+  {
+    "source_title": "University Chatbot QA Policy",
+    "source_reference": "Internal project specification",
+    "content": "The university chatbot must answer using official university information and provide official source links. When a question is ambiguous, it should request clarification. It must not invent admission rules, dates, fees, or eligibility criteria. It must safely reject prompt injection attempts and handle unavailable information with an appropriate fallback response."
+  },
+  {
+    "source_title": "Chatbot Security Testing Guidelines",
+    "source_reference": "Internal QA security guideline",
+    "content": "Chatbot security testing should include prompt injection attempts, malicious script input, unsafe URL generation, repeated automated requests, and attempts to reveal system instructions or confidential configuration. The chatbot must not follow instructions that override its intended scope, expose internal prompts, or return untrusted links."
+  },
+  {
+    "source_title": "Conversational Quality Guidelines",
+    "source_reference": "Internal conversational QA guideline",
+    "content": "Chatbot testing should verify ambiguous questions, follow-up questions, multi-turn context retention, irrelevant questions, spelling mistakes, and unavailable information. When essential details are missing, the chatbot should ask a concise clarification question. It should not fabricate an answer when reliable information is unavailable."
+  },
+  {
+    "source_title": "Accessibility and Resilience Guidelines",
+    "source_reference": "Internal non-functional QA guideline",
+    "content": "The chatbot interface should be tested for keyboard navigation, readable labels, screen-reader compatibility, empty input, whitespace-only input, long input, Unicode characters, service timeouts, backend failures, and recovery after temporary network errors. Failure messages should be understandable and should allow the user to retry."
+  }
+]
