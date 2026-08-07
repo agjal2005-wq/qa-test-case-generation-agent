@@ -217,9 +217,26 @@ Install dependencies:
 python -m pip install -r requirements.txt
 ```
 
-Create a `.env` file containing the Gemini API key and PostgreSQL connection configuration used by `database.py`.
+Create the local environment file from the safe template:
 
-Never commit the `.env` file.
+```powershell
+Copy-Item .env.example .env
+```
+
+Open `.env` and configure:
+
+```dotenv
+GEMINI_API_KEY=your_gemini_api_key
+DB_USER=postgres
+DB_PASSWORD=your_postgresql_password
+DB_HOST=localhost
+DB_PORT=5433
+DB_NAME=qa_test_agent
+```
+
+Use `DB_PORT=5432` if PostgreSQL runs on its standard port.
+
+Never commit the real `.env` file.
 
 ### 4. Create database tables
 
