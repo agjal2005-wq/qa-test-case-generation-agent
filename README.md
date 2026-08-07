@@ -337,13 +337,29 @@ Each generated test case includes:
 
 The project uses a local PostgreSQL database and open-source frontend/backend technologies. Duplicate knowledge detection avoids unnecessary embedding requests. The agentic workflow uses a bounded improvement cycle to control API usage.
 
+## Automated Tests
+
+The project includes unit tests for the RAG cosine-similarity calculation, covering identical, orthogonal, zero and opposite vectors.
+
+Run the tests from the backend folder:
+
+```powershell
+python -m pytest -v
+```
+
+Expected result:
+
+```text
+4 passed
+```
+
 ## Future Enhancements
 
 - Replace JSONB embedding storage with `pgvector`
 - Add indexed vector similarity search
 - Upload and automatically chunk PDF requirement documents
 - Add authentication and role-based access
-- Add automated unit and integration tests
+- Expand automated API integration and end-to-end tests
 - Containerize using Docker
 - Deploy the frontend and backend
 - Add test-suite version history

@@ -1,13 +1,19 @@
-# Python virtual environment
+# Python virtual environments
+.venv/
 backend/.venv/
 
-# Python cache
+# Python caches and test artifacts
 __pycache__/
 *.py[cod]
+.pytest_cache/
 
 # Secret environment variables
 .env
 *.env
+
+# Keep the safe configuration template
+!.env.example
+!backend/.env.example
 
 # Frontend dependencies and builds
 frontend/node_modules/

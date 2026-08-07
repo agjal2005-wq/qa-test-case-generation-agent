@@ -4,16 +4,22 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
+from functools import lru_cache
 
 load_dotenv()
 
-client = genai.Client()
+# client = genai.Client()
 
 EMBEDDING_MODEL = "gemini-embedding-001"
 EMBEDDING_DIMENSIONS = 768
 
+@lru_cache(maxsize=1)
+def get_genai_client():
+    return genai.Client()
+
 
 def create_document_embedding(text: str) -> list[float]:
+    client = get_genai_client()
     result = client.models.embed_content(
         model=EMBEDDING_MODEL,
         contents=text,
@@ -27,6 +33,7 @@ def create_document_embedding(text: str) -> list[float]:
 
 
 def create_query_embedding(text: str) -> list[float]:
+    client = get_genai_client()
     result = client.models.embed_content(
         model=EMBEDDING_MODEL,
         contents=text,
