@@ -495,6 +495,34 @@ labelled conditions or clarification-dependent tests. Keep IDs sequential.
           )
         )}
 
+        {testSuite?.retrieved_sources?.length > 0 && (
+          <section className="rag-source-card">
+            <div className="rag-source-heading">
+              <div>
+                <p className="section-label">Retrieval-Augmented Generation</p>
+                <h3>Test cases grounded with trusted knowledge</h3>
+              </div>
+
+              <span className="rag-active-badge">
+                RAG active
+              </span>
+            </div>
+
+            <p className="rag-description">
+              The agent semantically retrieved the following PostgreSQL
+              knowledge sources before generating this test suite.
+            </p>
+
+            <div className="rag-source-list">
+              {testSuite.retrieved_sources.map((source) => (
+                <span className="rag-source-item" key={source}>
+                  {source}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
         {testSuite && (
           <section className="refinement-card">
             <div>
