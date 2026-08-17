@@ -35,21 +35,23 @@ textarea {
   gap: 24px;
   padding: 24px 7%;
   color: white;
-  background: rgba(10, 10, 10, 0.9);
+  background: rgba(3, 3, 3, 0.9);
   border-bottom: 1px solid #262626;
+  font-size: 18px;
 }
 
 .header h1 {
   margin: 4px 0 0;
   font-size: 25px;
   letter-spacing: 1px;
+
 }
 
 .brand-label,
 .section-label {
   margin: 0;
-  color: #38bdf8;
-  font-size: 12px;
+  color: #80ffb3;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 1.5px;
 }
@@ -60,7 +62,7 @@ textarea {
   gap: 8px;
   padding: 9px 13px;
   color: #d1fae5;
-  border: 1px solid #334155;
+  border: 1px solid #68ff8e;
   border-radius: 999px;
   background: #111827;
   font-size: 14px;
@@ -78,6 +80,8 @@ textarea {
   width: min(1050px, 88%);
   margin: 0 auto;
   padding: 55px 0 70px;
+  border-top: 3.5px solid;
+  border-image: linear-gradient(to right, rgba(3, 3, 3, 0.9) ,#72e04a, #324ff3, rgba(3, 3, 3, 0.9)) 1;
 }
 
 .intro-section {
@@ -97,7 +101,7 @@ textarea {
 }
 
 .intro-text {
-  color: #94a3b8;
+  color: #5495f1;
   font-size: 17px;
   line-height: 1.7;
 }
@@ -107,7 +111,7 @@ textarea {
   padding: 28px;
   border: 1px solid #27272a;
   border-radius: 16px;
-  background: #0d0d0f;
+  background: #032917ad;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 }
 
@@ -171,8 +175,8 @@ button {
 }
 
 button:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+  filter: brightness(1.3);
+  transform: translateY(-1.5px);
 }
 
 .primary-button {
@@ -181,9 +185,9 @@ button:hover {
 }
 
 .secondary-button {
-  color: #7dd3fc;
+  color: #7dfc88;
   border: 1px solid #164e63;
-  background: #082f49;
+  background: #142d91;
 }
 
 .result-placeholder {
@@ -247,7 +251,7 @@ button:disabled {
   padding: 28px;
   border: 1px solid #27272a;
   border-radius: 16px;
-  background: #0d0d0f;
+  background: #032917ad;
 }
 
 .analysis-header {
@@ -268,19 +272,19 @@ button:disabled {
   min-width: 110px;
   padding: 14px;
   text-align: center;
-  border: 1px solid #164e63;
+  border: 1px solid #178254;
   border-radius: 12px;
-  background: #082f49;
+  background: #0c0849;
 }
 
 .score-block strong {
   display: block;
-  color: #7dd3fc;
+  color: #7dfca9;
   font-size: 28px;
 }
 
 .score-block span {
-  color: #94a3b8;
+  color: #94b8a2;
   font-size: 12px;
 }
 
@@ -299,8 +303,8 @@ button:disabled {
 }
 
 .not-ready {
-  color: #fde68a;
-  background: #713f12;
+  color: #fdfdfd;
+  background: #9c840ebe;
 }
 
 .analysis-grid {
@@ -313,21 +317,21 @@ button:disabled {
 .analysis-grid > div,
 .question-section {
   padding: 20px;
-  border: 1px solid #27272a;
+  border: 2px solid #2a772f;
   border-radius: 12px;
-  background: #08080a;
+  background: #09094d97;
 }
 
 .analysis-card h4 {
   margin: 0 0 12px;
-  color: #e2e8f0;
+  color: #1ee06e;
 }
 
 .analysis-card ul,
 .analysis-card ol {
   margin: 0;
   padding-left: 20px;
-  color: #a8b4c5;
+  color: #ffffff;
   line-height: 1.65;
 }
 
@@ -387,7 +391,7 @@ button:disabled {
   padding: 25px;
   border: 1px solid #27272a;
   border-radius: 15px;
-  background: #0d0d0f;
+  background: #032917ad;
 }
 
 .test-case-header {
